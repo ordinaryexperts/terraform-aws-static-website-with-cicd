@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+
+  CertificateArn:
+    Type: 'String'
+
+  Url:
+    Type: 'String'
+
+Mappings:
+
+  RegionMap:
+
+    us-east-1:
+      S3HostedZoneId: Z3AQBSTGFYJSTF
+      S3WebsiteEndpoint: s3-website-us-east-1.amazonaws.com
+
+    us-west-1:
+      S3HostedZoneId: Z2F56UZL2M1ACD
+      S3WebsiteEndpoint: s3-website-us-west-1.amazonaws.com
+
+    us-west-2:
+      S3HostedZoneId: Z3BJ6K6RIION7M
+      S3WebsiteEndpoint: s3-website-us-west-2.amazonaws.com
+
+    eu-west-1:
+      S3HostedZoneId: Z1BKCTXD74EZPE
+      S3WebsiteEndpoint: s3-website-eu-west-1.amazonaws.com
+
+    ap-southeast-1:
+      S3HostedZoneId: Z3O0J2DXBE1FTB
+      S3WebsiteEndpoint: s3-website-ap-southeast-1.amazonaws.com
+
+    ap-southeast-2:
+      S3HostedZoneId: Z1WCIGYICN2BYD
+      S3WebsiteEndpoint: s3-website-ap-southeast-2.amazonaws.com
+
+    ap-northeast-1:
+      S3HostedZoneId: Z2M4EHUR26P7ZW
+      S3WebsiteEndpoint: s3-website-ap-northeast-1.amazonaws.com
+
+    sa-east-1:
+      S3HostedZoneId: Z31GFT0UA1I2HV
+      S3WebsiteEndpoint: s3-website-sa-east-1.amazonaws.com
+
+Resources:
+
+  WebsiteBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: 'PublicRead'
+      WebsiteConfiguration:
+        IndexDocument: 'index.html'
+        ErrorDocument: '404.html'
+
+  WebsiteBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+          -
+            Action: 's3:GetObject'
+            Effect: 'Allow'
+            Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
+            Principal: '*'
+
+  CloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Ref Url
+          - !Sub "www.${Url}"
+        DefaultCacheBehavior:
+          Compress: true
+          ForwardedValues:
+            Cookies:
+              Forward: 'none'
+            QueryString: true
+          TargetOriginId: 'WebsiteBucket'
+          ViewerProtocolPolicy: 'redirect-to-https'
+        DefaultRootObject: 'index.html'
+        Enabled: true
+        HttpVersion: 'http2'
+        Origins:
+          -
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: 'http-only'
+            DomainName: !Join [., [!Ref WebsiteBucket, !FindInMap [RegionMap, !Ref 'AWS::Region', S3WebsiteEndpoint]]]
+            Id: 'WebsiteBucket'
+        PriceClass: 'PriceClass_All'
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: 'sni-only'
+          
+  AliasDns:
+    Type: 'AWS::Route53::RecordSetGroup'
+    Properties:
+      HostedZoneName: !Sub "${Url}."
+      RecordSets:
+        -
+          Name: !Sub "${Url}."
+          Type: 'A'
+          AliasTarget:
+            # http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html#cfn-route53-aliastarget-hostedzoneid
+            HostedZoneId: 'Z2FDTNDATAQYW2'
+            DNSName: !GetAtt CloudFrontDistribution.DomainName
+        -
+          Name: !Sub "www.${Url}."
+          TTL: 300
+          Type: 'CNAME'
+          ResourceRecords:
+            - !GetAtt CloudFrontDistribution.DomainName
+
+Outputs:
+  WebsiteBucket:
+    Value: !Ref WebsiteBucket
+
+  WebsiteBucketDns:
+    Value: !GetAtt WebsiteBucket.DomainName
+
+  CloudFrontDistributionDomain:
+    Value: !GetAtt CloudFrontDistribution.DomainName
+
+  CloudFrontDistributionId:
+    Value: !Ref CloudFrontDistribution
