@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+
+  PipelineBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: 'Private'
+
+  # https://docs.aws.amazon.com/codepipeline/latest/userguide/S3-artifact-encryption.html
+  PipelineBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref PipelineBucket
+      PolicyDocument:
+        Statement:
+          -
+            Sid: DenyUnEncryptedArtifactUploads
+            Action:
+              - s3:PutObject
+            Condition:
+              StringNotEquals:
+                s3:x-amz-server-side-encryption: 'aws:kms'
+            Effect: Deny
+            Principal: '*'
+            Resource:
+              - !Sub "arn:aws:s3:::${PipelineBucket}/*"
+          -
+            Sid: DenyInsecureArtifactConnections
+            Action:
+              - 's3:*'
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+            Effect: Deny
+            Principal: '*'
+            Resource:
+              - !Sub "arn:aws:s3:::${PipelineBucket}/*"
+
+Outputs:
+  PipelineBucket:
+    Value: !Ref PipelineBucket

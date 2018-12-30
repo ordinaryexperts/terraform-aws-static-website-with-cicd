@@ -1,0 +1,210 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+
+  CloudFrontDistributionId:
+    Type: String
+
+  PipelineBucket:
+    Type: String
+
+  SourceCodeCommitRepoName:
+    Type: String
+
+  SourceCodeCommitRepoBranch:
+    Type: String
+
+  WebsiteBucket:
+    Type: String
+
+Resources:
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/'
+      Policies:
+        -
+          PolicyName: codebuild-service
+          PolicyDocument:
+            Statement:
+              -
+                Sid: AllowBuilds
+                Action:
+                  - 'codebuild:StartBuild'
+                Effect: Allow
+                Resource: !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${AWS::StackName}-DeploySite"
+              -
+                Sid: AllowLogging
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Effect: Allow
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${AWS::StackName}-DeploySite:*"
+              -
+                Sid: AllowDownloadArtifacts
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource:
+                  - !Sub "arn:aws:s3:::${PipelineBucket}/*SourceOutp*"
+                Effect: Allow
+              -
+                Sid: AllowUpdateWebsite
+                Action:
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                Resource:
+                  - !Sub "arn:aws:s3:::${WebsiteBucket}/*"
+                Effect: Allow
+              -
+                Sid: AllowCloudFrontInvalidation
+                Action:
+                  - cloudfront:CreateInvalidation
+                Resource:
+                  # CloudFront doesn't support resource-level policies:
+                  # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-services-that-work-with-iam.html#networking_svcs
+                  - "*"
+                Effect: Allow
+            Version: '2012-10-17'
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/'
+      Policies:
+        -
+          PolicyName: codepipeline-service
+          PolicyDocument:
+            Statement:
+              -
+                Sid: AllowCodeBuildIntegration
+                Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds # Added because of an error in build logs showing access was denied on this action.
+                Resource: !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuildDeploySite}"
+
+              # https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-permissions-reference.html#aa-acp
+              -
+                Sid: AllowCodeCommitIntegration
+                Effect: Allow
+                Action:
+                  - codecommit:GetBranch
+                  - codecommit:GetCommit
+                  - codecommit:UploadArchive
+                  - codecommit:GetUploadArchiveStatus
+                  - codecommit:CancelUploadArchive
+                Resource: !Sub "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${SourceCodeCommitRepoName}"
+
+              -
+                Sid: AllowGetVersioningOnPipelineBucket
+                Action:
+                  - s3:GetBucketVersioning
+                Resource:
+                  - !Sub "arn:aws:s3:::${PipelineBucket}"
+                Effect: Allow
+              -
+                Sid: AllowPipelineArtifactStorage
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:PutObject
+                Resource:
+                  - !Sub "arn:aws:s3:::${PipelineBucket}/*"
+                Effect: Allow
+            Version: '2012-10-17'
+
+  CodeBuildDeploySite:
+    Type: AWS::CodeBuild::Project
+    DependsOn: CodeBuildRole
+    Properties:
+      Name: !Sub ${AWS::StackName}-DeploySite
+      Description: Deploy site to S3
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: 'aws/codebuild/ubuntu-base:14.04'
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
+          version: 0.1
+          phases:
+            install:
+              commands:
+                - wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v0.31.1/hugo_0.31.1_Linux-64bit.deb
+                - dpkg -i /tmp/hugo.deb
+            build:
+              commands:
+                - hugo
+            post_build:
+              commands:
+                - aws s3 cp --recursive --acl public-read ./public s3://${WebsiteBucket}/
+                - aws cloudfront create-invalidation --distribution-id ${CloudFrontDistributionId} --paths '/*'
+      TimeoutInMinutes: 10
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      Stages:
+        -
+          Name: Source
+          Actions:
+            -
+              Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: '1'
+                Provider: CodeCommit
+              Configuration:
+                RepositoryName: !Ref SourceCodeCommitRepoName
+                BranchName: !Ref SourceCodeCommitRepoBranch
+              InputArtifacts: []
+              OutputArtifacts:
+                - Name: SourceOutput
+              RunOrder: 1
+        -
+          Name: Deploy
+          Actions:
+            -
+              Name: Artifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildDeploySite
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: DeployOutput
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelineBucket
