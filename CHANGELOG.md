@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Added build_command variable
+* Added code_build_docker_image_identifier variable
+
 ## [0.1.0]
 
 * Initial release
