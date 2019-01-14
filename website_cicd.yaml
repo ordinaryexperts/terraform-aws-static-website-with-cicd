@@ -2,6 +2,12 @@ AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
 
+  BuildCommand:
+    Type: String
+
+  CodeBuildDockerImageIdentifier:
+    Type: String
+
   CloudFrontDistributionId:
     Type: String
 
@@ -147,19 +153,15 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: 'aws/codebuild/ubuntu-base:14.04'
+        Image: !Ref CodeBuildDockerImageIdentifier
       Source:
         Type: CODEPIPELINE
         BuildSpec: !Sub |
           version: 0.1
           phases:
-            install:
-              commands:
-                - wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v0.31.1/hugo_0.31.1_Linux-64bit.deb
-                - dpkg -i /tmp/hugo.deb
             build:
               commands:
-                - hugo
+                - ${BuildCommand}
             post_build:
               commands:
                 - aws s3 cp --recursive --acl public-read ./public s3://${WebsiteBucket}/
