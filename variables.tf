@@ -24,6 +24,11 @@ variable "env" {
   description = ""
 }
 
+variable "notification_email" {
+  description = "Email address which should receive deploy notifications"
+  default = ""
+}
+
 variable "url" {
   description = ""
 }
