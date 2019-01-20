@@ -1,10 +1,10 @@
 variable "build_command" {
-  description = ""
+  description = "The command that is run via CodeBuild to generate the site"
   default = "bash ./build.sh"
 }
 
 variable "cert_arn" {
-  description = ""
+  description = "The ARN of the certification for the site - should include *.example.com and example.com"
 }
 
 variable "code_build_docker_image_identifier" {
@@ -13,15 +13,21 @@ variable "code_build_docker_image_identifier" {
 }
 
 variable "code_commit_repo_branch" {
-  description = ""
+  description = "The CodeCommit branch which will trigger deployments"
+  default = "master"
 }
 
 variable "code_commit_repo_name" {
-  description = ""
+  description = "The name of the CodeCommit repository hosting the site"
+  default = "website"
+}
+
+variable "domain" {
+  description = "The URL or domain for the site, without the 'www', i.e. example.com"
 }
 
 variable "env" {
-  description = ""
+  description = "The name of the environment, i.e. dev, test, prod; will be used to prefix CloudFormation stack names"
 }
 
 variable "notification_email" {
@@ -29,6 +35,3 @@ variable "notification_email" {
   default = ""
 }
 
-variable "url" {
-  description = ""
-}

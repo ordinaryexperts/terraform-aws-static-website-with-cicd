@@ -3,7 +3,7 @@ resource "aws_cloudformation_stack" "website_bucket_and_cf" {
   on_failure = "DELETE"
   parameters {
     CertificateArn = "${var.cert_arn}"
-    Url = "${var.url}"
+    Domain = "${var.domain}"
   }
   template_body = "${file("${path.module}/website_bucket_and_cf.yaml")}"
 }
