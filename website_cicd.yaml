@@ -11,6 +11,10 @@ Parameters:
   CloudFrontDistributionId:
     Type: String
 
+  NotificationEmail:
+    Type: String
+    Default: ''
+
   PipelineBucket:
     Type: String
 
@@ -23,7 +27,20 @@ Parameters:
   WebsiteBucket:
     Type: String
 
+Conditions:
+
+  EnablePipelineNotifications: !Not [!Equals [ !Ref NotificationEmail, '' ]]
+
 Resources:
+
+  DeployNotificationTopic:
+    Condition: EnablePipelineNotifications
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      Subscription:
+        -
+          Endpoint: !Ref NotificationEmail
+          Protocol: 'email'
 
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -210,3 +227,69 @@ Resources:
       ArtifactStore:
         Type: S3
         Location: !Ref PipelineBucket
+
+  DeployNotificationTopicPolicy:
+    Condition: EnablePipelineNotifications
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowCWEPublishToSNS
+          Effect: Allow
+          Principal:
+            Service: events.amazonaws.com
+          Action: sns:Publish
+          Resource: !Ref DeployNotificationTopic
+      Topics:
+      - !Ref DeployNotificationTopic
+
+  SuccessfulDeployRule:
+    Condition: EnablePipelineNotifications
+    Type: AWS::Events::Rule
+    Properties:
+      Description: 'Successful CodePipeline'
+      State: ENABLED
+      EventPattern:
+        source:
+        - 'aws.codepipeline'
+        detail-type:
+        - 'CodePipeline Pipeline Execution State Change'
+        detail:
+          pipeline:
+          - !Ref Pipeline
+          state:
+          - SUCCEEDED
+      Targets:
+      - Arn:
+          Ref: DeployNotificationTopic
+        Id: 'DeployNotificationTopicTarget'
+        InputTransformer:
+          InputTemplate: !Sub '"SUCCESS: The <pipeline> pipeline has completed successfully: https://console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/<pipeline>"'
+          InputPathsMap:
+            pipeline: '$.detail.pipeline'
+
+  FailedCodePipelineRule:
+    Condition: EnablePipelineNotifications
+    Type: AWS::Events::Rule
+    Properties:
+      Description: 'Failed CodePipeline'
+      State: ENABLED
+      EventPattern:
+        source:
+        - 'aws.codepipeline'
+        detail-type:
+        - 'CodePipeline Pipeline Execution State Change'
+        detail:
+          pipeline:
+          - !Ref Pipeline
+          state:
+          - FAILED
+      Targets:
+      - Arn:
+          Ref: DeployNotificationTopic
+        Id: 'DeployNotificationTopicTarget'
+        InputTransformer:
+          InputTemplate: !Sub '"ERROR: The <pipeline> pipeline has failed!: https://console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/<pipeline>"'
+          InputPathsMap:
+            pipeline: '$.detail.pipeline'

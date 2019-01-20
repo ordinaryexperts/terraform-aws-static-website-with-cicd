@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0]
+
+* Adding notification_email variable
+* Improve documentation
+
 ## [0.2.0]
 
 * Added build_command variable
