@@ -1,6 +1,6 @@
 variable "build_command" {
   description = "The command that is run via CodeBuild to generate the site"
-  default = "bash ./build.sh"
+  default = "if [ -f ./build ]; then chmod 700 ./build && ./build; fi"
 }
 
 variable "cert_arn" {
