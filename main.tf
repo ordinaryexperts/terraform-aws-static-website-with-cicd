@@ -4,6 +4,7 @@ resource "aws_cloudformation_stack" "website_bucket_and_cf" {
   parameters {
     CertificateArn = "${var.cert_arn}"
     Domain = "${var.domain}"
+    WhitelistedIPs = "${var.whitelisted_ips}"
   }
   template_body = "${file("${path.module}/website_bucket_and_cf.yaml")}"
 }

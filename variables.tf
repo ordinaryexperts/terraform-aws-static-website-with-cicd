@@ -35,3 +35,8 @@ variable "notification_email" {
   default = ""
 }
 
+
+variable "whitelisted_ips" {
+  description = "The list of whitelisted IPs to use for the WAF IPSet"
+}
+
