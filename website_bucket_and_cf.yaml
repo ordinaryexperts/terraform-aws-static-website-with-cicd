@@ -9,7 +9,7 @@ Parameters:
     Type: 'String'
 
   WhitelistedIPs:
-    Type: 'List' 
+    Type: 'CommaDelimitedList' 
 
 Mappings:
 
