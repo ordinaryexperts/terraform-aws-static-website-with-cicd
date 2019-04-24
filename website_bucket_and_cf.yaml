@@ -124,7 +124,7 @@ Resources:
     Properties:
       Name: !Ref 'AWS::StackName'
       DefaultAction:
-        Type: ALLOW
+        Type: BLOCK 
       MetricName: !Join ['', [!Join ['', !Split ['-', !Ref 'AWS::StackName']], 'MaliciousRequesters']]
       Rules:
         - Action:
@@ -147,7 +147,8 @@ Resources:
   WAFWhitelistSet:
     Type: 'AWS::WAFRegional::IPSet'
     Properties:
-      Name: !Join [' - ', [!Ref 'AWS::StackName', 'Whitelist Set']] 
+      #Name: !Join [' - ', [!Ref 'AWS::StackName', 'Whitelist Set']] 
+      Name: !Join ['', !Split [',', !Ref WhitelistedIPs]]
 
 Outputs:
   WebsiteBucket:
