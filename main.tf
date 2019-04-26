@@ -1,10 +1,15 @@
+resource "aws_waf_ipset" "whitelisted_ips" {
+  name = "WhitelistedIps"
+  ip_set_descriptors = "${var.whitelisted_ips}"
+}
+
 resource "aws_cloudformation_stack" "website_bucket_and_cf" {
   name = "${var.env}-website-bucket-and-cf-stack"
   on_failure = "DELETE"
   parameters {
     CertificateArn = "${var.cert_arn}"
     Domain = "${var.domain}"
-    WhitelistedIPs = "${var.whitelisted_ips}"
+    WhitelistedIPSetId = "${aws_waf_ipset.whitelisted_ips.id}"
   }
   template_body = "${file("${path.module}/website_bucket_and_cf.yaml")}"
 }

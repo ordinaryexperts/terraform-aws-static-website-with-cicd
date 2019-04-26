@@ -8,8 +8,8 @@ Parameters:
   Domain:
     Type: 'String'
 
-  WhitelistedIPs:
-    Type: 'CommaDelimitedList' 
+  WhitelistedIPSetId:
+    Type: 'String'
 
 Mappings:
 
@@ -99,6 +99,7 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: 'sni-only'
+        WebACLId: !Ref WebsiteWebACL
           
   AliasDns:
     Type: 'AWS::Route53::RecordSetGroup'
@@ -120,7 +121,7 @@ Resources:
             - !GetAtt CloudFrontDistribution.DomainName
 
   WebsiteWebACL:
-    Type: 'AWS::WAFRegional::WebACL'
+    Type: 'AWS::WAF::WebACL'
     Properties:
       Name: !Ref 'AWS::StackName'
       DefaultAction:
@@ -135,20 +136,14 @@ Resources:
       - WebsiteBucket
 
   WAFWhitelistRule:
-    Type: 'AWS::WAFRegional::Rule'
+    Type: 'AWS::WAF::Rule'
     Properties:
-      Name: !Join [' - ', [!Ref 'AWS::StackName', 'Whitelist Rule']]
+      Name: !Sub "${AWS::StackName}-whitelisted-ips"
       MetricName: !Join ['', [!Join ['', !Split ['-', !Ref 'AWS::StackName']], 'WhitelistRule']]
       Predicates:
-        - DataId: !Ref WAFWhitelistSet
+        - DataId: !Ref WhitelistedIPSetId
           Negated: false
           Type: IPMatch
-
-  WAFWhitelistSet:
-    Type: 'AWS::WAFRegional::IPSet'
-    Properties:
-      #Name: !Join [' - ', [!Ref 'AWS::StackName', 'Whitelist Set']] 
-      Name: !Join ['', !Split [',', !Ref WhitelistedIPs]]
 
 Outputs:
   WebsiteBucket:
