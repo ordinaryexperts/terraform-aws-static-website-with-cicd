@@ -47,6 +47,11 @@ Mappings:
       S3HostedZoneId: Z31GFT0UA1I2HV
       S3WebsiteEndpoint: s3-website-sa-east-1.amazonaws.com
 
+Conditions:
+
+  EnableWAFCreation: !Not [ !Equals [ !Join ['', !Ref WhitelistedIPSetId, '']]]
+
+
 Resources:
 
   WebsiteBucket:
@@ -121,6 +126,7 @@ Resources:
             - !GetAtt CloudFrontDistribution.DomainName
 
   WebsiteWebACL:
+    Condition: EnableWAFCreation
     Type: 'AWS::WAF::WebACL'
     Properties:
       Name: !Ref 'AWS::StackName'
@@ -136,6 +142,7 @@ Resources:
       - WebsiteBucket
 
   WAFWhitelistRule:
+    Condition: EnableWAFCreation
     Type: 'AWS::WAF::Rule'
     Properties:
       Name: !Sub "${AWS::StackName}-whitelisted-ips"
