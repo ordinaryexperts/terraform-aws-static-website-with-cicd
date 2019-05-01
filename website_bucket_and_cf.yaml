@@ -10,6 +10,7 @@ Parameters:
 
   WhitelistedIPSetId:
     Type: 'String'
+    Default: ''
 
 Mappings:
 
@@ -49,7 +50,7 @@ Mappings:
 
 Conditions:
 
-  EnableWAFCreation: !Not [ !Equals [ !Join ['', !Ref WhitelistedIPSetId, '']]]
+  EnableWAFCreation: !Not [!Equals [ !Ref WhitelistedIPSetId, '' ]]
 
 
 Resources:
@@ -105,7 +106,7 @@ Resources:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: 'sni-only'
         WebACLId: !Ref WebsiteWebACL
-          
+
   AliasDns:
     Type: 'AWS::Route53::RecordSetGroup'
     Properties:
