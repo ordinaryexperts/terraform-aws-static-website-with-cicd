@@ -8,9 +8,9 @@ Parameters:
   Domain:
     Type: 'String'
 
-  WhitelistedIPSetId:
+  WebACLId:
     Type: 'String'
-    Default: ''
+    Default: 'none'
 
 Mappings:
 
@@ -49,9 +49,8 @@ Mappings:
       S3WebsiteEndpoint: s3-website-sa-east-1.amazonaws.com
 
 Conditions:
-
-  EnableWAFCreation: !Not [!Equals [ !Ref WhitelistedIPSetId, '' ]]
-
+  EnableWAF:
+    !Not [!Equals [!Ref WebACLId, 'none']]
 
 Resources:
 
@@ -105,7 +104,7 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: 'sni-only'
-        WebACLId: !Ref WebsiteWebACL
+        WebACLId: !If [EnableWAF, !Ref WebACLId, !Ref 'AWS::NoValue']
 
   AliasDns:
     Type: 'AWS::Route53::RecordSetGroup'
@@ -125,33 +124,6 @@ Resources:
           Type: 'CNAME'
           ResourceRecords:
             - !GetAtt CloudFrontDistribution.DomainName
-
-  WebsiteWebACL:
-    Condition: EnableWAFCreation
-    Type: 'AWS::WAF::WebACL'
-    Properties:
-      Name: !Ref 'AWS::StackName'
-      DefaultAction:
-        Type: BLOCK 
-      MetricName: !Join ['', [!Join ['', !Split ['-', !Ref 'AWS::StackName']], 'MaliciousRequesters']]
-      Rules:
-        - Action:
-            Type: ALLOW
-          Priority: 10
-          RuleId: !Ref WAFWhitelistRule
-    DependsOn:
-      - WebsiteBucket
-
-  WAFWhitelistRule:
-    Condition: EnableWAFCreation
-    Type: 'AWS::WAF::Rule'
-    Properties:
-      Name: !Sub "${AWS::StackName}-whitelisted-ips"
-      MetricName: !Join ['', [!Join ['', !Split ['-', !Ref 'AWS::StackName']], 'WhitelistRule']]
-      Predicates:
-        - DataId: !Ref WhitelistedIPSetId
-          Negated: false
-          Type: IPMatch
 
 Outputs:
   WebsiteBucket:
