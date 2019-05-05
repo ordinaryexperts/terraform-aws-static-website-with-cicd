@@ -20,18 +20,18 @@ This module makes several assumptions:
 We recommend using aws-vault as a credential store:
 https://github.com/99designs/aws-vault
 
-$ aws-vault comes in very handy during stack deployment (and otherwise)
-$ aws-vault exec oe-prod -- terraform init
-$ aws-vault exec oe-prod -- terraform apply
-$ aws-vault exec oe-prod -- terraform plan
+    $ aws-vault comes in very handy during stack deployment (and otherwise)
+    $ aws-vault exec oe-prod -- terraform init
+    $ aws-vault exec oe-prod -- terraform apply
+    $ aws-vault exec oe-prod -- terraform plan
 
-$ terraform {
-$   backend "s3" {
-$     bucket  = "YOUR_BUCKET_NAME"
-$     key     = "static-site-example/terraform.tfstate"
-$     region  = "YOUR_BUCKET_REGION"
-$   }
-$ }
+    $ terraform {
+    $   backend "s3" {
+    $     bucket  = "YOUR_BUCKET_NAME"
+    $     key     = "static-site-example/terraform.tfstate"
+    $     region  = "YOUR_BUCKET_REGION"
+    $   }
+    $ }
 
 $ provider "aws" {
 $   region  = ""
