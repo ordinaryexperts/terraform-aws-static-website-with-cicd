@@ -20,39 +20,39 @@ This module makes several assumptions:
 We recommend using aws-vault as a credential store:
 https://github.com/99designs/aws-vault
 
-aws-vault comes in very handy during stack deployment (and otherwise)
+$ aws-vault comes in very handy during stack deployment (and otherwise)
 $ aws-vault exec oe-prod -- terraform init
 $ aws-vault exec oe-prod -- terraform apply
 $ aws-vault exec oe-prod -- terraform plan
 
-terraform {
-  backend "s3" {
-    bucket  = "YOUR_BUCKET_NAME"
-    key     = "static-site-example/terraform.tfstate"
-    region  = "YOUR_BUCKET_REGION"
-  }
-}
+$ terraform {
+$   backend "s3" {
+$     bucket  = "YOUR_BUCKET_NAME"
+$     key     = "static-site-example/terraform.tfstate"
+$     region  = "YOUR_BUCKET_REGION"
+$   }
+$ }
 
-provider "aws" {
-  region  = ""
-  version = "~> x.x"
-}
+$ provider "aws" {
+$   region  = ""
+$   version = "~> x.x"
+$ }
 
-module "static-website-with-cicd" {
-  source  = "ordinaryexperts/static-website-with-cicd/aws"
-  version = "x.x.x"
+$ module "static-website-with-cicd" {
+$   source  = "ordinaryexperts/static-website-with-cicd/aws"
+$   version = "x.x.x"
 
-  code_build_docker_image_identifier = "aws/codebuild/ruby:2.5.3"
-  cert_arn = "YOUR_CERTIFICATE_ARN"
-  code_commit_repo_branch = "YOUR_CODE_COMMIT_REPO_BRANCH"
-  code_commit_repo_name = "YOUR_CODE_COMMIT_REPO_NAME"
-  domain = "static-site-testing.mycompanyname.com"
-  env = "test1"
-  notification_email = "hello@myemail.com"
-  whitelisted_ips = [
-    { value = "52.52.11.3/32", type = "IPV4" },
-  ]
-}
+$   code_build_docker_image_identifier = "aws/codebuild/ruby:2.5.3"
+$   cert_arn = "YOUR_CERTIFICATE_ARN"
+$   code_commit_repo_branch = "YOUR_CODE_COMMIT_REPO_BRANCH"
+$   code_commit_repo_name = "YOUR_CODE_COMMIT_REPO_NAME"
+$   domain = "static-site-testing.mycompanyname.com"
+$   env = "test1"
+$   notification_email = "hello@myemail.com"
+$   whitelisted_ips = [
+$     { value = "52.52.11.3/32", type = "IPV4" },
+$   ]
+$ }
 
 ## Examples
 
