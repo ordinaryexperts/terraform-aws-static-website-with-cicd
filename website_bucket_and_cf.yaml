@@ -54,10 +54,23 @@ Conditions:
 
 Resources:
 
+  OriginAccessIdentity:
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub "${Domain} OAI"
+
   WebsiteBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      AccessControl: 'PublicRead'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          -
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      Tags:
+        - Key: Domain
+          Value: !Ref Domain
       WebsiteConfiguration:
         IndexDocument: 'index.html'
         ErrorDocument: '404.html'
@@ -72,7 +85,8 @@ Resources:
             Action: 's3:GetObject'
             Effect: 'Allow'
             Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
-            Principal: '*'
+            Principal:
+              CanonicalUser: !GetAtt OriginAccessIdentity.S3CanonicalUserId
 
   CloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
@@ -94,17 +108,18 @@ Resources:
         HttpVersion: 'http2'
         Origins:
           -
-            CustomOriginConfig:
-              HTTPPort: '80'
-              HTTPSPort: '443'
-              OriginProtocolPolicy: 'http-only'
-            DomainName: !Join [., [!Ref WebsiteBucket, !FindInMap [RegionMap, !Ref 'AWS::Region', S3WebsiteEndpoint]]]
+            DomainName: !Join [ "", [!Ref WebsiteBucket, ".s3.amazonaws.com" ] ]
             Id: 'WebsiteBucket'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${OriginAccessIdentity}"
         PriceClass: 'PriceClass_All'
         ViewerCertificate:
           AcmCertificateArn: !Ref CertificateArn
           SslSupportMethod: 'sni-only'
         WebACLId: !If [EnableWAF, !Ref WebACLId, !Ref 'AWS::NoValue']
+      Tags:
+        - Key: Domain
+          Value: !Ref Domain
 
   AliasDns:
     Type: 'AWS::Route53::RecordSetGroup'
