@@ -60,8 +60,6 @@ aws-vault comes in very handy during stack deployment (and otherwise):
 
 ## Known Issues / Limitations
 
-The whitelisted_ips list variable must always be supplied - empty or not; if it isn't present the stack deployment will not succeed.
-
 ## Variables 
 
     $ variable "build_command" {
