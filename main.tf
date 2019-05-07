@@ -1,11 +1,11 @@
 resource "aws_waf_ipset" "whitelisted_ips" {
-  count = "${length(var.whitelisted_ips)}"
+  count = "${length(var.whitelisted_ips) > 0 ? 1 : 0}"
   name = "WhitelistedIps"
   ip_set_descriptors = "${var.whitelisted_ips}"
 }
 
 resource "aws_waf_rule" "whitelisted_ips_rule" {
-  count = "${length(var.whitelisted_ips)}"
+  count = "${length(var.whitelisted_ips) > 0 ? 1 : 0}"
   depends_on  = ["aws_waf_ipset.whitelisted_ips"]
   name = "${var.env}-website-bucket-and-cf-stack"
   name        = "${var.env}WhitelistedIPsRule"
@@ -19,7 +19,7 @@ resource "aws_waf_rule" "whitelisted_ips_rule" {
 }
 
 resource "aws_waf_web_acl" "whitelisted_ips_acl" {
-  count = "${length(var.whitelisted_ips)}"
+  count = "${length(var.whitelisted_ips) > 0 ? 1 : 0}"
   depends_on  = ["aws_waf_rule.whitelisted_ips_rule"]
   name        = "${var.env}WhitelistedIPsACL"
   metric_name = "${var.env}WhitelistedIPsACL"
