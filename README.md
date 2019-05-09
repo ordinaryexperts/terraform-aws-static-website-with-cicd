@@ -121,8 +121,8 @@ aws-vault comes in very handy during stack deployment (and otherwise):
 
 ## Authors
 
-Dylan Vaughn -> dylan@ordinaryexperts.com
-Julian Rosenthal -> julian@ordinaryexperts.com
+    Dylan Vaughn -> dylan@ordinaryexperts.com
+    Julian Rosenthal -> julian@ordinaryexperts.com
 
 ##License
 
