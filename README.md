@@ -56,9 +56,20 @@ aws-vault comes in very handy during stack deployment (and otherwise):
       ]
     }
 
-## Examples
+1. Save the above terraform code into a file called main.tf in a directory of your choice.
+1. You will need to choose a unique bucket name for bucket.
+1. The bucket region value is "us-west-2" for US-West (Oregon), for example.
+1. The region under provider is for the CloudFormation stack.
+1. The cert_arn value is the ARN from AWS Certificate Manager.
+1. The values for code_commit_repo_branch and code_commit_repo_name are for the code you want to use for your static website.
+1. The domain should coincide with the domain of the certificate that cert_arn is refering to.
+1. The list of IPs to whitelist are to be specified in whitelisted_ips.
 
+Note: If an empty list is supplied via whitelisted_ips or whitelisted_ips is ommited altogether than WAF will be created and the static website will be open to the world.
+ 
 ## Known Issues / Limitations
+
+None known at this time.
 
 ## Variables 
 
