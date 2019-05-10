@@ -65,7 +65,7 @@ aws-vault comes in very handy during stack deployment (and otherwise):
 1. The domain should coincide with the domain of the certificate that cert_arn is refering to.
 1. The list of IPs to whitelist are to be specified in whitelisted_ips.
 
-Note: If an empty list is supplied via whitelisted_ips or whitelisted_ips is ommited altogether than WAF will be created and the static website will be open to the world.
+Note: If an empty list is supplied via whitelisted_ips or whitelisted_ips is ommited altogether than a WAF will NOT be created and the static website will be open to the world.
  
 ## Known Issues / Limitations
 
