@@ -181,7 +181,7 @@ Resources:
                 - ${BuildCommand}
             post_build:
               commands:
-                - aws s3 cp --recursive --acl public-read ./public s3://${WebsiteBucket}/
+                - aws s3 cp --recursive ./public s3://${WebsiteBucket}/
                 - aws cloudfront create-invalidation --distribution-id ${CloudFrontDistributionId} --paths '/*'
       TimeoutInMinutes: 10
 

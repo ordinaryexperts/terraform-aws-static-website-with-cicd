@@ -1,9 +1,52 @@
+resource "aws_waf_ipset" "whitelisted_ips" {
+  count = "${length(var.whitelisted_ips) > 0 ? 1 : 0}"
+  name = "WhitelistedIps"
+  ip_set_descriptors = "${var.whitelisted_ips}"
+}
+
+resource "aws_waf_rule" "whitelisted_ips_rule" {
+  count = "${length(var.whitelisted_ips) > 0 ? 1 : 0}"
+  depends_on  = ["aws_waf_ipset.whitelisted_ips"]
+  name = "${var.env}-website-bucket-and-cf-stack"
+  name        = "${var.env}WhitelistedIPsRule"
+  metric_name = "${var.env}WhitelistedIPsRule"
+
+  predicates {
+    data_id = "${aws_waf_ipset.whitelisted_ips.id}"
+    negated = false
+    type    = "IPMatch"
+  }
+}
+
+resource "aws_waf_web_acl" "whitelisted_ips_acl" {
+  count = "${length(var.whitelisted_ips) > 0 ? 1 : 0}"
+  depends_on  = ["aws_waf_rule.whitelisted_ips_rule"]
+  name        = "${var.env}WhitelistedIPsACL"
+  metric_name = "${var.env}WhitelistedIPsACL"
+
+  default_action {
+    type = "BLOCK"
+  }
+
+  rules {
+    action {
+      type = "ALLOW"
+    }
+
+    priority = 10
+    rule_id  = "${aws_waf_rule.whitelisted_ips_rule.id}"
+    type     = "REGULAR"
+  }
+}
+
 resource "aws_cloudformation_stack" "website_bucket_and_cf" {
   name = "${var.env}-website-bucket-and-cf-stack"
+  depends_on = ["aws_waf_web_acl.whitelisted_ips_acl"]
   on_failure = "DELETE"
   parameters {
     CertificateArn = "${var.cert_arn}"
     Domain = "${var.domain}"
+    WebACLId = "${length(var.whitelisted_ips) > 0 ? "${join("", aws_waf_web_acl.whitelisted_ips_acl.*.id)}" : "none"}"
   }
   template_body = "${file("${path.module}/website_bucket_and_cf.yaml")}"
 }
