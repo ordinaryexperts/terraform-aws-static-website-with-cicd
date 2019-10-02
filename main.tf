@@ -57,6 +57,8 @@ resource "aws_cloudformation_stack" "website_bucket_and_cf" {
     WebACLId = "${length(var.whitelisted_ips) > 0 ? "${join("", aws_waf_web_acl.whitelisted_ips_acl.*.id)}" : "none"}"
   }
   template_body = "${file("${path.module}/website_bucket_and_cf.yaml")}"
+  # CloudFront distributions can take a long time to create...
+  timeout_in_minutes = 60
 }
 
 resource "aws_cloudformation_stack" "pipeline_bucket" {
