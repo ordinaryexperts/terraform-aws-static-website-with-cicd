@@ -16,7 +16,6 @@ resource "aws_waf_ipset" "whitelisted_ips" {
 resource "aws_waf_rule" "whitelisted_ips_rule" {
   count = "${length(var.whitelisted_ips) > 0 ? 1 : 0}"
   depends_on  = ["aws_waf_ipset.whitelisted_ips"]
-  name = "${var.env}-website-bucket-and-cf-stack"
   name        = "${var.env}WhitelistedIPsRule"
   metric_name = "${var.env}WhitelistedIPsRule"
 
