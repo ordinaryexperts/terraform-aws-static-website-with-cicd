@@ -21,9 +21,10 @@ We recommend using aws-vault as a credential store:
 https://github.com/99designs/aws-vault
 
 aws-vault comes in very handy during stack deployment (and otherwise):
-1. aws-vault exec oe-prod -- terraform init
-1. aws-vault exec oe-prod -- terraform apply
-1. aws-vault exec oe-prod -- terraform plan
+
+    $ aws-vault exec oe-prod -- terraform init
+    $ aws-vault exec oe-prod -- terraform apply
+    $ aws-vault exec oe-prod -- terraform plan
 
 ## Example terraform stack needed to deploy the static-website-with-cicd stack
 
