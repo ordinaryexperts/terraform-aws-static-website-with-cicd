@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0]
+* Upgrading to Terraform 12
+
 ## [1.2.1]
 * Fixing duplicate name property
 
