@@ -58,7 +58,12 @@ resource "aws_cloudformation_stack" "website_bucket_and_cf" {
   }
   template_body = "${file("${path.module}/website_bucket_and_cf.yaml")}"
   # CloudFront distributions can take a long time to create...
-  timeout_in_minutes = 60
+  timeouts {
+    create = "2h"
+    delete = "2h"
+    update = "4h"
+  }
+
 }
 
 resource "aws_cloudformation_stack" "pipeline_bucket" {
