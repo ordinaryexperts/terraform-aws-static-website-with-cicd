@@ -6,8 +6,8 @@ resource "aws_waf_ipset" "whitelisted_ips" {
     for_each = var.whitelisted_ips
 
     content {
-      type = ip_set_descriptors.type
-      value = ip_set_descriptors.value
+      type = ip_set_descriptors.value.type
+      value = ip_set_descriptors.value.value
     }
   }
 
@@ -49,6 +49,7 @@ resource "aws_waf_web_acl" "whitelisted_ips_acl" {
 
 resource "aws_cloudformation_stack" "website_bucket_and_cf" {
   name = "${var.env}-website-bucket-and-cf-stack"
+  capabilities = ["CAPABILITY_IAM"]
   depends_on = ["aws_waf_web_acl.whitelisted_ips_acl"]
   on_failure = "DELETE"
   parameters = {

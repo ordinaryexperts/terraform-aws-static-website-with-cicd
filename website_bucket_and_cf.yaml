@@ -12,42 +12,6 @@ Parameters:
     Type: 'String'
     Default: 'none'
 
-Mappings:
-
-  RegionMap:
-
-    us-east-1:
-      S3HostedZoneId: Z3AQBSTGFYJSTF
-      S3WebsiteEndpoint: s3-website-us-east-1.amazonaws.com
-
-    us-west-1:
-      S3HostedZoneId: Z2F56UZL2M1ACD
-      S3WebsiteEndpoint: s3-website-us-west-1.amazonaws.com
-
-    us-west-2:
-      S3HostedZoneId: Z3BJ6K6RIION7M
-      S3WebsiteEndpoint: s3-website-us-west-2.amazonaws.com
-
-    eu-west-1:
-      S3HostedZoneId: Z1BKCTXD74EZPE
-      S3WebsiteEndpoint: s3-website-eu-west-1.amazonaws.com
-
-    ap-southeast-1:
-      S3HostedZoneId: Z3O0J2DXBE1FTB
-      S3WebsiteEndpoint: s3-website-ap-southeast-1.amazonaws.com
-
-    ap-southeast-2:
-      S3HostedZoneId: Z1WCIGYICN2BYD
-      S3WebsiteEndpoint: s3-website-ap-southeast-2.amazonaws.com
-
-    ap-northeast-1:
-      S3HostedZoneId: Z2M4EHUR26P7ZW
-      S3WebsiteEndpoint: s3-website-ap-northeast-1.amazonaws.com
-
-    sa-east-1:
-      S3HostedZoneId: Z31GFT0UA1I2HV
-      S3WebsiteEndpoint: s3-website-sa-east-1.amazonaws.com
-
 Conditions:
   EnableWAF:
     !Not [!Equals [!Ref WebACLId, 'none']]
@@ -63,17 +27,20 @@ Resources:
   WebsiteBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
+      AccessControl: 'Private'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           -
             ServerSideEncryptionByDefault:
               SSEAlgorithm: 'AES256'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       Tags:
         - Key: Domain
           Value: !Ref Domain
-      WebsiteConfiguration:
-        IndexDocument: 'index.html'
-        ErrorDocument: '404.html'
 
   WebsiteBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
@@ -88,6 +55,59 @@ Resources:
             Principal:
               CanonicalUser: !GetAtt OriginAccessIdentity.S3CanonicalUserId
 
+  EdgeLambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - edgelambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+
+  EdgeLambdaVersion201912211027:
+    Type: "AWS::Lambda::Version"
+    Properties:
+      FunctionName:
+        Ref: EdgeLambdaFunction
+
+  EdgeLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Role: !GetAtt EdgeLambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          const path = require('path');
+          exports.handler = async (event) => {
+            const { request } = event.Records[0].cf;
+            const { uri } = request;
+            const extension = path.extname(uri);
+            if (extension && extension.length > 0) {
+              return request;
+            }
+            const last_character = uri.slice(-1);
+            var newUri;
+            if (last_character === "/") {
+              newUri = `${uri}index.html`;
+            } else {
+              newUri = `${uri}/index.html`;
+            }
+            console.log(`Rewriting ${uri} to ${newUri}...`);
+            request.uri = newUri;
+            return request;
+          };
+      Runtime: nodejs10.x
+      Timeout: 5
+      Handler: index.handler
+      MemorySize: 128
+
   CloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
@@ -95,12 +115,28 @@ Resources:
         Aliases:
           - !Ref Domain
           - !Sub "www.${Domain}"
+        CustomErrorResponses:
+          -
+            ErrorCode: 403
+            ResponseCode: 404
+            ResponsePagePath: /errors/404.html
+          -
+            ErrorCode: 404
+            ResponseCode: 404
+            ResponsePagePath: /errors/404.html
         DefaultCacheBehavior:
           Compress: true
           ForwardedValues:
             Cookies:
               Forward: 'none'
             QueryString: true
+          LambdaFunctionAssociations:
+            -
+              EventType: 'viewer-request'
+              LambdaFunctionARN:  !Join [':', [!GetAtt EdgeLambdaFunction.Arn, !GetAtt EdgeLambdaVersion201912211027.Version]]
+          DefaultTTL: 0
+          MaxTTL: 0
+          MinTTL: 0
           TargetOriginId: 'WebsiteBucket'
           ViewerProtocolPolicy: 'redirect-to-https'
         DefaultRootObject: 'index.html'
@@ -135,7 +171,7 @@ Resources:
             DNSName: !GetAtt CloudFrontDistribution.DomainName
         -
           Name: !Sub "www.${Domain}."
-          TTL: 300
+          TTL: '300'
           Type: 'CNAME'
           ResourceRecords:
             - !GetAtt CloudFrontDistribution.DomainName
