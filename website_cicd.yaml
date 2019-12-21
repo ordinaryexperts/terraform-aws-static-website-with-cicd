@@ -160,7 +160,6 @@ Resources:
 
   CodeBuildDeploySite:
     Type: AWS::CodeBuild::Project
-    DependsOn: CodeBuildRole
     Properties:
       Name: !Sub ${AWS::StackName}-DeploySite
       Description: Deploy site to S3
