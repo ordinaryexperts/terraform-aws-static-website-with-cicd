@@ -88,6 +88,11 @@ None known at this time.
       default = "aws/codebuild/ubuntu-base:14.04"
     }
 
+    variable "custom_error_response_page_path" {
+      description = "The path to an HTML page to use for 403 and 404 errors"
+      default = ""
+    }
+
     variable "code_commit_repo_branch" {
       description = "The CodeCommit branch which will trigger deployments"
       default = "master"

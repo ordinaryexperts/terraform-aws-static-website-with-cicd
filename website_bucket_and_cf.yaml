@@ -5,6 +5,10 @@ Parameters:
   CertificateArn:
     Type: 'String'
 
+  CustomErrorResponsePagePath:
+    Type: 'String'
+    Default: ''
+
   Domain:
     Type: 'String'
 
@@ -13,8 +17,8 @@ Parameters:
     Default: 'none'
 
 Conditions:
-  EnableWAF:
-    !Not [!Equals [!Ref WebACLId, 'none']]
+  EnableWAF: !Not [!Equals [!Ref WebACLId, 'none']]
+  HasCustomErrorResponsePagePath: !Not [!Equals [!Ref CustomErrorResponsePagePath, '']]
 
 Resources:
 
@@ -115,15 +119,18 @@ Resources:
         Aliases:
           - !Ref Domain
           - !Sub "www.${Domain}"
-        CustomErrorResponses:
+        CustomErrorResponses: !If
+          - HasCustomErrorResponsePagePath
           -
-            ErrorCode: 403
-            ResponseCode: 404
-            ResponsePagePath: /errors/404.html
-          -
-            ErrorCode: 404
-            ResponseCode: 404
-            ResponsePagePath: /errors/404.html
+            -
+              ErrorCode: 403
+              ResponseCode: 404
+              ResponsePagePath: !Ref CustomErrorResponsePagePath
+            -
+              ErrorCode: 404
+              ResponseCode: 404
+              ResponsePagePath: !Ref CustomErrorResponsePagePath
+          - !Ref 'AWS::NoValue'
         DefaultCacheBehavior:
           Compress: true
           ForwardedValues:
