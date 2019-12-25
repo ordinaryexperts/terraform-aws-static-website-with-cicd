@@ -22,6 +22,11 @@ variable "code_commit_repo_name" {
   default = "website"
 }
 
+variable "custom_error_response_page_path" {
+  description = "The path to an HTML page to use for 403 and 404 errors"
+  default = ""
+}
+
 variable "domain" {
   description = "The URL or domain for the site, without the 'www', i.e. example.com"
 }

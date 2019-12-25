@@ -54,6 +54,7 @@ resource "aws_cloudformation_stack" "website_bucket_and_cf" {
   on_failure = "DELETE"
   parameters = {
     CertificateArn = var.cert_arn
+    CustomErrorResponsePagePath = var.custom_error_response_page_path
     Domain = var.domain
     WebACLId = "${length(var.whitelisted_ips) > 0 ? "${join("", aws_waf_web_acl.whitelisted_ips_acl.*.id)}" : "none"}"
   }

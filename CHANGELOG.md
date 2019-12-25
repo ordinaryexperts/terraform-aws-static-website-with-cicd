@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+* Making custom error pages a parameter
+
+## [2.1.0]
 * Fixes for showing index.html in subdirectories
 * Fixes for adding trailing slash
 * Block all public access to buckets
