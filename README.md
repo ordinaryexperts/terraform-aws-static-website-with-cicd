@@ -154,4 +154,4 @@ https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-d
 
 ## License
 
-    Apache 2 Licensed. See LICENSE for full details.
+    MIT License. See LICENSE for full details.
