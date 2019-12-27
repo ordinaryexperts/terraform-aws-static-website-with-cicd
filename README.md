@@ -5,6 +5,7 @@ The user can supply a list of IP addresses to whitelist to access the s3-backed 
 The whitelist will be implemented via a WAF and WAFRule.
 If whitelisted_ips contains an empty list then the WAF and WAFRule will not be allocated.
 
+![AWS Component Diagram](https://github.com/ordinaryexperts/terraform-aws-static-website-with-cicd/raw/develop/terraform-aws-static-website-with-cicd.png)
 
 ## Assumptions
 
@@ -18,6 +19,7 @@ This module makes several assumptions:
 ## Usage
 
 We recommend using aws-vault as a credential store:
+
 https://github.com/99designs/aws-vault
 
 aws-vault comes in very handy during stack deployment (and otherwise):
