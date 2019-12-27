@@ -84,6 +84,9 @@ Resources:
 
   EdgeLambdaFunction:
     Type: 'AWS::Lambda::Function'
+    # Edge Lambda functions can't be deleted until hours after their CloudFront distribution is deleted
+    # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-delete-replicas.html
+    DeletionPolicy: Retain
     Properties:
       Role: !GetAtt EdgeLambdaExecutionRole.Arn
       Code:
