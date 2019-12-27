@@ -5,6 +5,7 @@ The user can supply a list of IP addresses to whitelist to access the s3-backed 
 The whitelist will be implemented via a WAF and WAFRule.
 If whitelisted_ips contains an empty list then the WAF and WAFRule will not be allocated.
 
+![AWS Component Diagram](https://github.com/ordinaryexperts/terraform-aws-static-website-with-cicd/raw/develop/terraform-aws-static-website-with-cicd.png)
 
 ## Assumptions
 
@@ -18,6 +19,7 @@ This module makes several assumptions:
 ## Usage
 
 We recommend using aws-vault as a credential store:
+
 https://github.com/99designs/aws-vault
 
 aws-vault comes in very handy during stack deployment (and otherwise):
@@ -59,7 +61,7 @@ aws-vault comes in very handy during stack deployment (and otherwise):
 
 1. Save the above terraform code into a file called main.tf in a directory of your choice.
 1. You will need to choose a unique bucket name for bucket.
-1. The bucket region value is "us-west-2" for US-West (Oregon), for example.
+1. The bucket region value is "us-east-1" for US East (N. Virginia), for example.
 1. The region under provider is for the CloudFormation stack.
 1. The cert_arn value is the ARN from AWS Certificate Manager.
 1. The values for code_commit_repo_branch and code_commit_repo_name are for the code you want to use for your static website.
@@ -70,7 +72,15 @@ Note: If an empty list is supplied via whitelisted_ips or whitelisted_ips is omm
  
 ## Known Issues / Limitations
 
-None known at this time.
+*Must be launched in US East (N. Virginia)*
+
+Why? Lambda@Edge functions can only be deployed into us-east-1 at this time.
+
+*Lambda@Edge function is not deleted when stack is deleted*
+
+Why? Lambda@Edge functions can only be deleted hours after their CloudFront distribution is deleted:
+
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-delete-replicas.html
 
 ## Variables 
 

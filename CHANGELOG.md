@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0]
+* Adding diagram to docs
+* retaining lambda @ edge function on delete
+
 ## [2.2.0]
 * Making custom error pages a parameter
 
