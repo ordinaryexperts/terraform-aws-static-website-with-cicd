@@ -5,12 +5,13 @@ The user can supply a list of IP addresses to whitelist to access the s3-backed 
 The whitelist will be implemented via a WAF and WAFRule.
 If whitelisted_ips contains an empty list then the WAF and WAFRule will not be allocated.
 
-![AWS Component Diagram](https://github.com/ordinaryexperts/terraform-aws-static-website-with-cicd/raw/develop/terraform-aws-static-website-with-cicd.png)
+![AWS Component Diagram](https://github.com/ordinaryexperts/terraform-aws-static-website-with-cicd/raw/master/terraform-aws-static-website-with-cicd.png)
 
 ## Assumptions
 
 This module makes several assumptions:
 
+1. US East (N. Virginia) is the AWS region (see Limitations below)
 1. The code for the website is stored in a CodeCommit repository
 1. The SSL certificate for the website has been provisioned with the AWS Certificate Manager
 1. The build command for the website defaults to a `build` script in the root of the repo
@@ -151,6 +152,6 @@ https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-d
     Dylan Vaughn -> dylan@ordinaryexperts.com
     Julian Rosenthal -> julian@ordinaryexperts.com
 
-##License
+## License
 
     Apache 2 Licensed. See LICENSE for full details.
