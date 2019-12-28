@@ -114,6 +114,11 @@ https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-d
       default = "website"
     }
 
+    variable "debug" {
+      description = "Set to 'true' to turn on debugging.  Currently this just sets the TTL for CloudFront to 0"
+      default = "false"
+    }
+
     variable "domain" {
       description = "The URL or domain for the site, without the 'www', i.e. example.com"
     }

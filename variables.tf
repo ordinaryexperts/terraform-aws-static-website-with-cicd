@@ -27,6 +27,11 @@ variable "custom_error_response_page_path" {
   default = ""
 }
 
+variable "debug" {
+  description = "Set to 'true' to turn on debugging.  Currently this just sets the TTL for CloudFront to 0"
+  default = "false"
+}
+
 variable "domain" {
   description = "The URL or domain for the site, without the 'www', i.e. example.com"
 }

@@ -9,6 +9,11 @@ Parameters:
     Type: 'String'
     Default: ''
 
+  Debug:
+    Type: 'String'
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+
   Domain:
     Type: 'String'
 
@@ -17,6 +22,7 @@ Parameters:
     Default: 'none'
 
 Conditions:
+  EnableDebug: !Equals [!Ref Debug, 'true']
   EnableWAF: !Not [!Equals [!Ref WebACLId, 'none']]
   HasCustomErrorResponsePagePath: !Not [!Equals [!Ref CustomErrorResponsePagePath, '']]
 
@@ -144,9 +150,9 @@ Resources:
             -
               EventType: 'viewer-request'
               LambdaFunctionARN:  !Join [':', [!GetAtt EdgeLambdaFunction.Arn, !GetAtt EdgeLambdaVersion201912211027.Version]]
-          DefaultTTL: 0
-          MaxTTL: 0
-          MinTTL: 0
+          DefaultTTL: !If [EnableDebug, 0, !Ref 'AWS::NoValue']
+          MaxTTL: !If [EnableDebug, 0, !Ref 'AWS::NoValue']
+          MinTTL: !If [EnableDebug, 0, !Ref 'AWS::NoValue']
           TargetOriginId: 'WebsiteBucket'
           ViewerProtocolPolicy: 'redirect-to-https'
         DefaultRootObject: 'index.html'
