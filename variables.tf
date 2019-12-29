@@ -9,7 +9,7 @@ variable "cert_arn" {
 
 variable "code_build_docker_image_identifier" {
   description = "Docker Image Identifier: https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html"
-  default = "aws/codebuild/ubuntu-base:14.04"
+  default = "aws/codebuild/standard:3.0"
 }
 
 variable "code_commit_repo_branch" {
