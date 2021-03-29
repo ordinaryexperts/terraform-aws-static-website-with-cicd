@@ -18,8 +18,13 @@ variable "code_commit_repo_branch" {
 }
 
 variable "code_commit_repo_name" {
-  description = "The name of the CodeCommit repository hosting the site"
+  description = "The name of the CodeCommit repository hosting the site; if using AWS CodeStar for Github or Bitbucket repositories, this should bne the full repository id eg. someuser/myrepo"
   default = "website"
+}
+
+variable "code_star_connection_arn" {
+  description = "The CodeStar connection ARN retrieved by manually creating the connection to a repository using the AWS console"
+  default = ""
 }
 
 variable "custom_error_response_page_path" {

@@ -2,10 +2,14 @@ AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
 
-  BuildCommand:
+  CodeBuildDockerImageIdentifier:
     Type: String
 
-  CodeBuildDockerImageIdentifier:
+  CodeStarSourceConnectionArn:
+    Default: ''
+    Type: String
+
+  BuildCommand:
     Type: String
 
   CloudFrontDistributionId:
@@ -30,6 +34,8 @@ Parameters:
 Conditions:
 
   EnablePipelineNotifications: !Not [!Equals [ !Ref NotificationEmail, '' ]]
+
+  EnableCodeStarSource: !Not [!Equals [ !Ref CodeStarSourceConnectionArn, '' ]]
 
 Resources:
 
@@ -100,6 +106,16 @@ Resources:
                   # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-services-that-work-with-iam.html#networking_svcs
                   - "*"
                 Effect: Allow
+              - !If
+                - EnableCodeStarSource
+                -
+                  Sid: AllowCodeStarConnection
+                  Action:
+                    - codestar-connections:UseConnection
+                  Resource:
+                    - !Ref CodeStarSourceConnectionArn
+                  Effect: Allow
+                - !Ref AWS::NoValue
             Version: '2012-10-17'
 
   CodePipelineRole:
@@ -156,6 +172,16 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:s3:::${PipelineBucket}/*"
                 Effect: Allow
+              - !If
+                - EnableCodeStarSource
+                -
+                  Sid: AllowCodeStarConnection
+                  Action:
+                    - codestar-connections:UseConnection
+                  Resource:
+                    - !Ref CodeStarSourceConnectionArn
+                  Effect: Allow
+                - !Ref AWS::NoValue
             Version: '2012-10-17'
 
   CodeBuildDeploySite:
@@ -192,20 +218,38 @@ Resources:
         -
           Name: Source
           Actions:
-            -
-              Name: Source
-              ActionTypeId:
-                Category: Source
-                Owner: AWS
-                Version: '1'
-                Provider: CodeCommit
-              Configuration:
-                RepositoryName: !Ref SourceCodeCommitRepoName
-                BranchName: !Ref SourceCodeCommitRepoBranch
-              InputArtifacts: []
-              OutputArtifacts:
-                - Name: SourceOutput
-              RunOrder: 1
+            - !If
+              - EnableCodeStarSource
+              -
+                Name: Source
+                ActionTypeId:
+                  Category: Source
+                  Owner: AWS
+                  Provider: CodeStarSourceConnection
+                  Version: '1'
+                Configuration:
+                  BranchName: !Ref SourceCodeCommitRepoBranch
+                  ConnectionArn: !Ref CodeStarSourceConnectionArn
+                  FullRepositoryId: !Ref SourceCodeCommitRepoName
+                  OutputArtifactFormat: "CODEBUILD_CLONE_REF"
+                InputArtifacts: []
+                OutputArtifacts:
+                  - Name: SourceOutput
+                RunOrder: 1
+              -
+                Name: Source
+                ActionTypeId:
+                  Category: Source
+                  Owner: AWS
+                  Version: '1'
+                  Provider: CodeCommit
+                Configuration:
+                  RepositoryName: !Ref SourceCodeCommitRepoName
+                  BranchName: !Ref SourceCodeCommitRepoBranch
+                InputArtifacts: []
+                OutputArtifacts:
+                  - Name: SourceOutput
+                RunOrder: 1
         -
           Name: Deploy
           Actions:
