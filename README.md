@@ -12,7 +12,6 @@ If whitelisted_ips contains an empty list then the WAF and WAFRule will not be a
 This module makes several assumptions:
 
 1. US East (N. Virginia) is the AWS region (see Limitations below)
-1. The code for the website is stored in a CodeCommit repository
 1. The SSL certificate for the website has been provisioned with the AWS Certificate Manager
 1. The build command for the website defaults to a `build` script in the root of the repo
 1. The build command places the files to be published into a `public` directory
@@ -70,7 +69,18 @@ aws-vault comes in very handy during stack deployment (and otherwise):
 1. The list of IPs to whitelist are to be specified in whitelisted_ips.
 
 Note: If an empty list is supplied via whitelisted_ips or whitelisted_ips is ommited altogether than a WAF will NOT be created and the static website will be open to the world.
- 
+
+### AWS CodeStar for code repositories in Bitbucket and Github
+
+The project default assumes that the website code is hosted in AWS CodeCommit. GitHub and Bitbucket source repositories are supported via integration with AWS CodeStar using an optional parameter to the Terraform module code named `code_star_connection_arn`. The connection ARN should be created in the AWS console as a manual process using one of the following guides from AWS documentation:
+
+* ![GitHub connections](https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html)
+* ![Bitbucket connections](https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-bitbucket.html)
+
+Copy the ARN as specified in the documentation. It should be of the format: `arn:aws:codestar-connections:us-west-2:account_id:connection/aEXAMPLE-8aad-4d5d-8878-dfcab0bc441f`.
+
+Use this value as the input for the `code_star_connection_arn` variable in the Terraform module code.
+
 ## Known Issues / Limitations
 
 *Must be launched in US East (N. Virginia)*
