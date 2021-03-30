@@ -81,6 +81,8 @@ Copy the ARN as specified in the documentation. It should be of the format: `arn
 
 Use this value as the input for the `code_star_connection_arn` variable in the Terraform module code.
 
+Also, when using GitHub or Bitbucket, the value for the `code_commit_repo_name` should be the "full repository id" as specified in the ![AWS CodePipeline documentation for CodeStar](https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html). This value should take the form `some-user/my-repo`, or `ordinaryexperts/terraform-aws-static-website-with-cicd` for this GitHub project.
+
 ## Known Issues / Limitations
 
 *Must be launched in US East (N. Virginia)*
