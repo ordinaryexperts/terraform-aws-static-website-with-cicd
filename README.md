@@ -74,14 +74,14 @@ Note: If an empty list is supplied via whitelisted_ips or whitelisted_ips is omm
 
 The project default assumes that the website code is hosted in AWS CodeCommit. GitHub and Bitbucket source repositories are supported via integration with AWS CodeStar using an optional parameter to the Terraform module code named `code_star_connection_arn`. The connection ARN should be created in the AWS console as a manual process using one of the following guides from AWS documentation:
 
-* ![GitHub connections](https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html)
-* ![Bitbucket connections](https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-bitbucket.html)
+* [GitHub connections](https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html)
+* [Bitbucket connections](https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-bitbucket.html)
 
 Copy the ARN as specified in the documentation. It should be of the format: `arn:aws:codestar-connections:us-west-2:account_id:connection/aEXAMPLE-8aad-4d5d-8878-dfcab0bc441f`.
 
 Use this value as the input for the `code_star_connection_arn` variable in the Terraform module code.
 
-Also, when using GitHub or Bitbucket, the value for the `code_commit_repo_name` should be the "full repository id" as specified in the ![AWS CodePipeline documentation for CodeStar](https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html). This value should take the form `some-user/my-repo`, or `ordinaryexperts/terraform-aws-static-website-with-cicd` for this GitHub project.
+Also, when using GitHub or Bitbucket, the value for the `code_commit_repo_name` should be the "full repository id" as specified in the [AWS CodePipeline documentation for CodeStar](https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html). This value should take the form `some-user/my-repo`, or `ordinaryexperts/terraform-aws-static-website-with-cicd` for this GitHub project.
 
 ## Known Issues / Limitations
 
