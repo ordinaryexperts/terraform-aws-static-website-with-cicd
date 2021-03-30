@@ -12,13 +12,13 @@ variable "code_build_docker_image_identifier" {
   default = "aws/codebuild/standard:3.0"
 }
 
-variable "code_commit_repo_branch" {
-  description = "The CodeCommit branch which will trigger deployments"
+variable "repo_branch" {
+  description = "The branch which will trigger deployments"
   default = "master"
 }
 
-variable "code_commit_repo_name" {
-  description = "The name of the CodeCommit repository hosting the site; if using AWS CodeStar for Github or Bitbucket repositories, this should bne the full repository id eg. someuser/myrepo"
+variable "repo_name" {
+  description = "The name of the repository hosting the site; if using AWS CodeStar for Github or Bitbucket repositories, this should be the full repository id eg. someuser/myrepo"
   default = "website"
 }
 

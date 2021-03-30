@@ -22,10 +22,10 @@ Parameters:
   PipelineBucket:
     Type: String
 
-  SourceCodeCommitRepoName:
+  SourceRepoName:
     Type: String
 
-  SourceCodeCommitRepoBranch:
+  SourceRepoBranch:
     Type: String
 
   WebsiteBucket:
@@ -154,7 +154,7 @@ Resources:
                   - codecommit:UploadArchive
                   - codecommit:GetUploadArchiveStatus
                   - codecommit:CancelUploadArchive
-                Resource: !Sub "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${SourceCodeCommitRepoName}"
+                Resource: !Sub "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${SourceRepoName}"
 
               -
                 Sid: AllowGetVersioningOnPipelineBucket
@@ -228,9 +228,9 @@ Resources:
                   Provider: CodeStarSourceConnection
                   Version: '1'
                 Configuration:
-                  BranchName: !Ref SourceCodeCommitRepoBranch
+                  BranchName: !Ref SourceRepoBranch
                   ConnectionArn: !Ref CodeStarSourceConnectionArn
-                  FullRepositoryId: !Ref SourceCodeCommitRepoName
+                  FullRepositoryId: !Ref SourceRepoName
                   OutputArtifactFormat: "CODEBUILD_CLONE_REF"
                 InputArtifacts: []
                 OutputArtifacts:
@@ -244,8 +244,8 @@ Resources:
                   Version: '1'
                   Provider: CodeCommit
                 Configuration:
-                  RepositoryName: !Ref SourceCodeCommitRepoName
-                  BranchName: !Ref SourceCodeCommitRepoBranch
+                  RepositoryName: !Ref SourceRepoName
+                  BranchName: !Ref SourceRepoBranch
                 InputArtifacts: []
                 OutputArtifacts:
                   - Name: SourceOutput

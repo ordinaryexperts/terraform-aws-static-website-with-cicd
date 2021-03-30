@@ -87,8 +87,8 @@ resource "aws_cloudformation_stack" "website_cicd" {
     CloudFrontDistributionId = aws_cloudformation_stack.website_bucket_and_cf.outputs["CloudFrontDistributionId"]
     NotificationEmail = var.notification_email
     PipelineBucket = aws_cloudformation_stack.pipeline_bucket.outputs["PipelineBucket"]
-    SourceCodeCommitRepoBranch = var.code_commit_repo_branch
-    SourceCodeCommitRepoName = var.code_commit_repo_name
+    SourceRepoBranch = var.repo_branch
+    SourceRepoName = var.repo_name
     WebsiteBucket = aws_cloudformation_stack.website_bucket_and_cf.outputs["WebsiteBucket"]
   }
   template_body = "${file("${path.module}/website_cicd.yaml")}"
