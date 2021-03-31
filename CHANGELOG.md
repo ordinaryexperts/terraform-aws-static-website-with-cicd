@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+* Adding conditional support for CodeStar source code connections
+* Upgrading to Terraform 12
+
 ## 3.0.1
 
 * Updating default codebuild image to `aws/codebuild/standard:3.0`

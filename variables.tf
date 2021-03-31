@@ -12,14 +12,19 @@ variable "code_build_docker_image_identifier" {
   default = "aws/codebuild/standard:3.0"
 }
 
-variable "code_commit_repo_branch" {
-  description = "The CodeCommit branch which will trigger deployments"
+variable "repo_branch" {
+  description = "The branch which will trigger deployments"
   default = "master"
 }
 
-variable "code_commit_repo_name" {
-  description = "The name of the CodeCommit repository hosting the site"
+variable "repo_name" {
+  description = "The name of the repository hosting the site; if using AWS CodeStar for Github or Bitbucket repositories, this should be the full repository id eg. someuser/myrepo"
   default = "website"
+}
+
+variable "code_star_connection_arn" {
+  description = "The CodeStar connection ARN retrieved by manually creating the connection to a repository using the AWS console"
+  default = ""
 }
 
 variable "custom_error_response_page_path" {
@@ -47,7 +52,7 @@ variable "notification_email" {
 
 variable "whitelisted_ips" {
   description = "The list of whitelisted IPs to use for the WAF IPSet"
-  type = "list"
+  type = list
   default = []
 }
 
