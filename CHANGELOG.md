@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 4.0.0
+
 * Adding conditional support for CodeStar source code connections
 * Upgrading to Terraform 12
 
