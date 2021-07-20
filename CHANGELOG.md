@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 4.1.1
+
+* Fix CHANGELOG
+
+## 4.1.0
+
 * Upgrade CodeBuild image and Lambda runtime
 
 ## 4.0.0
