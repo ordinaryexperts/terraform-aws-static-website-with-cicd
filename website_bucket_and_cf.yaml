@@ -116,7 +116,7 @@ Resources:
             request.uri = newUri;
             return request;
           };
-      Runtime: nodejs10.x
+      Runtime: nodejs12.x
       Timeout: 5
       Handler: index.handler
       MemorySize: 128
