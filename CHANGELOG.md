@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 4.2.0
+
+* Update Lambda runtime to nodejs20.x
+* Update default codebuild image to `aws/codebuild/standard:7.0`
+
 ## 4.1.1
 
 * Fix CHANGELOG
